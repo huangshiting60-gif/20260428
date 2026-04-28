@@ -100,8 +100,12 @@ function draw() {
     f.draw();
   }
 
-  // Ensure at least one hand is detected and video is loaded
-  if (hands.length > 0 && video.width > 0) {
+  // Ensure at least one hand is detected. 
+  // (加入安全機制：若瀏覽器尚未完全載入 video.width，預設給予 640x480 避免畫面畫不出來)
+  let vW = video.width > 0 ? video.width : 640;
+  let vH = video.height > 0 ? video.height : 480;
+
+  if (hands.length > 0) {
     for (let hand of hands) {
       // ml5.js 底層已經做過信心度篩選，可直接繪製
       // 繪製骨架線條
@@ -112,10 +116,10 @@ function draw() {
         let partB = hand.keypoints[connections[j][1]];
         
         // 同樣需要套用縮放比例與位置偏移量
-        let ax = x + partA.x * (imgW / video.width);
-        let ay = y + partA.y * (imgH / video.height);
-        let bx = x + partB.x * (imgW / video.width);
-        let by = y + partB.y * (imgH / video.height);
+        let ax = x + partA.x * (imgW / vW);
+        let ay = y + partA.y * (imgH / vH);
+        let bx = x + partB.x * (imgW / vW);
+        let by = y + partB.y * (imgH / vH);
         
         line(ax, ay, bx, by);
       }
@@ -126,8 +130,8 @@ function draw() {
         let keypoint = hand.keypoints[i];
 
         // 根據縮放與置中後的影像，計算對應的畫布座標
-        let adjustedX = x + keypoint.x * (imgW / video.width);
-        let adjustedY = y + keypoint.y * (imgH / video.height);
+        let adjustedX = x + keypoint.x * (imgW / vW);
+        let adjustedY = y + keypoint.y * (imgH / vH);
 
         if (fingertips.includes(i)) {
           // 在指尖畫愛心
