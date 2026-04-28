@@ -58,42 +58,40 @@ function draw() {
   // Ensure at least one hand is detected and video is loaded
   if (hands.length > 0 && video.width > 0) {
     for (let hand of hands) {
-      if (hand.confidence > 0.1) {
+      // ml5.js 底層已經做過信心度篩選，可直接繪製
+      // 繪製骨架線條
+      stroke(255); // 設定骨架線條為白色
+      strokeWeight(4); // 線條粗細
+      for (let j = 0; j < connections.length; j++) {
+        let partA = hand.keypoints[connections[j][0]];
+        let partB = hand.keypoints[connections[j][1]];
         
-        // 繪製骨架線條
-        stroke(255); // 設定骨架線條為白色
-        strokeWeight(4); // 線條粗細
-        for (let j = 0; j < connections.length; j++) {
-          let partA = hand.keypoints[connections[j][0]];
-          let partB = hand.keypoints[connections[j][1]];
-          
-          // 同樣需要套用縮放比例與位置偏移量
-          let ax = x + partA.x * (imgW / video.width);
-          let ay = y + partA.y * (imgH / video.height);
-          let bx = x + partB.x * (imgW / video.width);
-          let by = y + partB.y * (imgH / video.height);
-          
-          line(ax, ay, bx, by);
+        // 同樣需要套用縮放比例與位置偏移量
+        let ax = x + partA.x * (imgW / video.width);
+        let ay = y + partA.y * (imgH / video.height);
+        let bx = x + partB.x * (imgW / video.width);
+        let by = y + partB.y * (imgH / video.height);
+        
+        line(ax, ay, bx, by);
+      }
+
+      // Loop through keypoints and draw circles
+      for (let i = 0; i < hand.keypoints.length; i++) {
+        let keypoint = hand.keypoints[i];
+
+        // Color-code based on left or right hand
+        if (hand.handedness == "Left") {
+          fill(255, 0, 255);
+        } else {
+          fill(255, 255, 0);
         }
 
-        // Loop through keypoints and draw circles
-        for (let i = 0; i < hand.keypoints.length; i++) {
-          let keypoint = hand.keypoints[i];
-
-          // Color-code based on left or right hand
-          if (hand.handedness == "Left") {
-            fill(255, 0, 255);
-          } else {
-            fill(255, 255, 0);
-          }
-
-          noStroke();
-          // 根據縮放與置中後的影像，計算對應的畫布座標
-          let adjustedX = x + keypoint.x * (imgW / video.width);
-          let adjustedY = y + keypoint.y * (imgH / video.height);
-          
-          circle(adjustedX, adjustedY, 16);
-        }
+        noStroke();
+        // 根據縮放與置中後的影像，計算對應的畫布座標
+        let adjustedX = x + keypoint.x * (imgW / video.width);
+        let adjustedY = y + keypoint.y * (imgH / video.height);
+        
+        circle(adjustedX, adjustedY, 16);
       }
     }
   }
