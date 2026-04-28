@@ -5,6 +5,16 @@ let video;
 let handPose;
 let hands = [];
 
+// 定義手部骨架的連接點索引
+const connections = [
+  [0, 1], [1, 2], [2, 3], [3, 4],     // 大拇指
+  [0, 5], [5, 6], [6, 7], [7, 8],     // 食指
+  [5, 9], [9, 10], [10, 11], [11, 12],// 中指
+  [9, 13], [13, 14], [14, 15], [15, 16],// 無名指
+  [13, 17], [17, 18], [18, 19], [19, 20],// 小拇指
+  [0, 17]                             // 手掌根部
+];
+
 function preload() {
   // Initialize HandPose model with flipped video input
   handPose = ml5.handPose({ flipped: true });
@@ -49,6 +59,23 @@ function draw() {
   if (hands.length > 0 && video.width > 0) {
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
+        
+        // 繪製骨架線條
+        stroke(255); // 設定骨架線條為白色
+        strokeWeight(4); // 線條粗細
+        for (let j = 0; j < connections.length; j++) {
+          let partA = hand.keypoints[connections[j][0]];
+          let partB = hand.keypoints[connections[j][1]];
+          
+          // 同樣需要套用縮放比例與位置偏移量
+          let ax = x + partA.x * (imgW / video.width);
+          let ay = y + partA.y * (imgH / video.height);
+          let bx = x + partB.x * (imgW / video.width);
+          let by = y + partB.y * (imgH / video.height);
+          
+          line(ax, ay, bx, by);
+        }
+
         // Loop through keypoints and draw circles
         for (let i = 0; i < hand.keypoints.length; i++) {
           let keypoint = hand.keypoints[i];
